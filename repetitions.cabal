@@ -1,0 +1,19 @@
+name:                repetitions
+version:             0.1.0
+-- synopsis:
+-- description:
+license:             MIT
+license-file:        LICENSE
+author:              Sergey Parshukov
+maintainer:          codedby@bugman.me
+category:            Text
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+executable repetitions
+  main-is:           Main.hs
+-- other-modules:
+  default-language:  Haskell2010
+  ghc-options:       -Wall -fwarn-unused-imports -O2
+  build-depends:     base >=4.8 && <4.9
