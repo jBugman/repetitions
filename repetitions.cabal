@@ -9,7 +9,7 @@ maintainer:          codedby@bugman.me
 category:            Text
 build-type:          Simple
 -- extra-source-files:
-cabal-version:       >=1.10
+cabal-version:       >=1.20
 
 executable repetitions
   main-is:           Main.hs
