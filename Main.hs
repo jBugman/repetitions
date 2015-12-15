@@ -1,15 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
--- import qualified Data.Text.IO as T
 import System.Environment
 import Web.Scotty
-import Repetitions (process)
+import Text.Blaze.Html.Renderer.Text
+import Text.Blaze.Html5 (Html)
+
+-- import Repetitions.Core (process)
+import Repetitions.Frontend (index)
 
 main :: IO ()
--- main = T.interact process >> T.putStrLn ""
 main = do
   env <- getEnvironment
   let port = maybe 8080 read $ lookup "PORT" env
   scotty port $
-    get "/" $ html "Hello World!"
+    get "/" $ render index
+
+render :: Html -> ActionM ()
+render = html . renderHtml
