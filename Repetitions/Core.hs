@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Repetitions where
+module Repetitions.Core where
 
 import Text.EditDistance
 import qualified Data.Char as C
