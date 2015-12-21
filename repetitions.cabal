@@ -20,4 +20,5 @@ executable repetitions
                      text >=1.2 && <1.3,
                      edit-distance >=0.2 && <0.3,
                      scotty >=0.10 && <0.11,
-                     blaze-html >=0.8.1 && <0.9
+                     blaze-html >=0.8.1 && <0.9,
+                     wai-extra >=3.0
