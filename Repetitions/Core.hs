@@ -6,6 +6,8 @@ import qualified Data.Char as C
 import qualified Data.Text as T
 import Data.List (foldl')
 
+data AnnotatedWord = Ok !T.Text | Bad !T.Text
+
 -- |Size of neighbours list on each side of target word
 constRadius :: Int
 constRadius = 15
@@ -18,8 +20,13 @@ constThreshold = 3
 constSignificant :: Int
 constSignificant = 2
 
-process :: T.Text -> T.Text
-process text = T.unwords $ map (significantCase constThreshold) $ weightedWords constRadius text
+annotate :: T.Text -> [AnnotatedWord]
+annotate text = map (markRepetition constThreshold) $ weightedWords constRadius text
+
+markRepetition :: Int -> (T.Text, Int) -> AnnotatedWord
+markRepetition threshold (x, d)
+  | d < threshold = Bad x
+  | otherwise     = Ok x
 
 weightedWords :: Int -> T.Text -> [(T.Text, Int)]
 weightedWords radius text = map neighboursOf $ indexedItems ws where
@@ -34,11 +41,6 @@ distance a b = levenshteinDistance defaultEditCosts (T.unpack a) (T.unpack b)
 
 indexedItems :: [a] -> [(a, Int)]
 indexedItems xs = zip xs [0..]
-
-significantCase :: Int -> (T.Text, Int) -> T.Text
-significantCase threshold (x, d)
-  | d < threshold = T.toUpper x
-  | otherwise     = x
 
 neighboursAt :: Int -> Int -> [T.Text] -> [T.Text]
 neighboursAt radius n ws = lastN radius (significants lefts) ++ take radius (drop 1 $ significants rights)

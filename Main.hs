@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Data.Text (Text)
+import Data.Text (Text, unwords, toUpper)
 import Text.Blaze.Html5 (Html)
 
 import System.Environment
@@ -10,7 +10,7 @@ import Web.Scotty
 import Text.Blaze.Html.Renderer.Text
 import Text.Blaze.Html (toHtml)
 
-import Repetitions.Core (process)
+import Repetitions.Core
 import Repetitions.Frontend (index, result)
 
 
@@ -31,3 +31,9 @@ main = do
 
 render :: Html -> ActionM ()
 render = html . renderHtml
+
+process :: Text -> Text
+process t = Data.Text.unwords $ map significantCase $ annotate t
+  where
+    significantCase (Ok t) = t
+    significantCase (Bad t) = toUpper t
