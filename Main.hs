@@ -10,7 +10,7 @@ import Web.Scotty
 import Text.Blaze.Html.Renderer.Text
 import Text.Blaze.Html (toHtml)
 
-import Repetitions.Core
+import Repetitions.Core (annotate, AnnotatedWord(..))
 import Repetitions.Frontend (index, result)
 
 
@@ -22,18 +22,14 @@ main = do
     middleware logStdoutDev
 
     get "/" $ render index
+    post "/process" $ (param "text" :: ActionM Text) >>= (render . result . toHtml . process)
 
-    post "/process" $ do
-      t <- param "text" :: ActionM Text
-      let r = process t
-      let h = toHtml r
-      render $ result h
 
 render :: Html -> ActionM ()
 render = html . renderHtml
 
 process :: Text -> Text
-process t = Data.Text.unwords $ map significantCase $ annotate t
+process = Data.Text.unwords . map badToUpper . annotate
   where
-    significantCase (Ok t) = t
-    significantCase (Bad t) = toUpper t
+    badToUpper (Ok x) = x
+    badToUpper (Bad x) = toUpper x

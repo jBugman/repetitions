@@ -21,12 +21,12 @@ constSignificant :: Int
 constSignificant = 2
 
 annotate :: T.Text -> [AnnotatedWord]
-annotate text = map (markRepetition constThreshold) $ weightedWords constRadius text
+annotate = map markRepetition . weightedWords constRadius
 
-markRepetition :: Int -> (T.Text, Int) -> AnnotatedWord
-markRepetition threshold (x, d)
-  | d < threshold = Bad x
-  | otherwise     = Ok x
+markRepetition :: (T.Text, Int) -> AnnotatedWord
+markRepetition (x, d)
+  | d < constThreshold = Bad x
+  | otherwise          = Ok x
 
 weightedWords :: Int -> T.Text -> [(T.Text, Int)]
 weightedWords radius text = map neighboursOf $ indexedItems ws where
@@ -45,7 +45,7 @@ indexedItems xs = zip xs [0..]
 neighboursAt :: Int -> Int -> [T.Text] -> [T.Text]
 neighboursAt radius n ws = lastN radius (significants lefts) ++ take radius (drop 1 $ significants rights)
   where
-    significants xs = filter isSignificant $ map pureWord xs
+    significants    = filter isSignificant . map pureWord
     (lefts, rights) = splitAt n ws
 
 lastN :: Int -> [a] -> [a]
@@ -55,4 +55,4 @@ isSignificant :: T.Text -> Bool
 isSignificant w = T.length w > constSignificant
 
 pureWord :: T.Text -> T.Text
-pureWord word = T.toLower $ T.filter (not . C.isPunctuation) word
+pureWord = T.toLower . T.filter (not . C.isPunctuation)
