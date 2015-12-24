@@ -5,6 +5,8 @@ RUN cabal update
 
 ADD . /opt/build
 
-RUN cd /opt/build && cabal install --only-dependencies -j2
+WORKDIR /opt/build
 
-ENTRYPOINT cd /opt/build && cabal build
+RUN cabal install --only-dependencies -j2
+
+CMD ["cabal", "build"]
