@@ -1,9 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Repetitions.Frontend where
 
+import Prelude hiding (div, head, id, span, lines)
+import Data.Text (lines)
+import Data.Text.Lazy (toStrict)
 import Data.List (intersperse)
-import Prelude hiding (div, head, id, span)
-import Text.Blaze.Html (toHtml)
+import Text.Blaze.Html (toHtml, preEscapedToHtml)
+import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Blaze.Html5 (Html, (!), docTypeHtml, head, meta, link, title,
                          body, div, form, label, textarea, button, p, span)
 import Text.Blaze.Html5.Attributes (charset, class_, href, rel, media, for, rows, id,
@@ -20,8 +23,10 @@ index = layout "Repetitions" $
     button ! type_ "submit" ! class_ "btn btn-default" $ "Проверить"
 
 result :: [AnnotatedWord] -> Html
-result xs = layout "Repetitions" $
-  p ! style "font-size: 13pt;" $ mconcat . intersperse " " . map colorize $ xs
+result = layout "Repetitions" .
+  mapM_ (p . preEscapedToHtml) .
+  lines . toStrict . renderHtml .
+  mconcat . intersperse " " . map colorize
     where
       colorize (Ok x) = toHtml x
       colorize (Bad x) = span ! style "color: #d9534f;" $ toHtml x

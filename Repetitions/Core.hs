@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Repetitions.Core where
 
+import Prelude hiding (words)
 import Text.EditDistance
 import qualified Data.Char as C
 import qualified Data.Text as T
@@ -29,12 +30,17 @@ markRepetition (x, d)
   | otherwise          = Ok x
 
 weightedWords :: Int -> T.Text -> [(T.Text, Int)]
-weightedWords radius text = map neighboursOf $ indexedItems ws where
-  neighboursOf (w, n)
-    | processable w = (w, minimum $ map (distance w) $ neighboursAt radius n ws)
-    | otherwise     = (w, 32)
-  processable w = isSignificant $ pureWord w
-  ws = T.words text
+weightedWords radius text = map neighboursOf . indexedItems $ words
+  where
+    neighboursOf (w, n)
+      | processable w = (w, minimum $ map (distance w) $ neighboursAt radius n words)
+      | otherwise     = (w, 32)
+    processable w = isSignificant $ pureWord w
+    words = tokens text
+
+tokens :: T.Text -> [T.Text]
+-- tokens = T.words
+tokens = T.split (\c -> C.generalCategory c == C.Space)
 
 distance :: T.Text -> T.Text -> Int
 distance a b = levenshteinDistance defaultEditCosts (T.unpack a) (T.unpack b)
