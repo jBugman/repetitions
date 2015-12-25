@@ -34,14 +34,16 @@ result' = layout .
   mconcat . intersperse " " . map colorize
     where
       colorize (Ok x) = toHtml x
-      colorize (Bad x) = span ! A.style "color: #d9534f;" $ toHtml x
+      colorize (Bad x) = span ! class_ "bad" $ toHtml x
 
 layout :: Html -> Html
-layout c = H.docTypeHtml $ do
+layout content = H.docTypeHtml $ do
   H.head $ do
     H.title "Repetitions"
     H.meta ! A.charset "utf-8"
     H.link ! href "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" ! A.rel "stylesheet" ! A.media "screen"
+    H.style ".bad {color: #d9534f;} .container {padding: 20px;}"
   H.body $
     div ! class_ "container" $
-      div ! class_ "row" ! A.style "padding: 20px;" $ c
+      div ! class_ "row" $
+        content
