@@ -17,4 +17,4 @@ main = do
     middleware logStdoutDev
 
     get "/" $ html index
-    post "/process" $ (param "text" :: ActionM Text) >>= (html . result . annotate)
+    post "/result" $ (param "text" :: ActionM Text) >>= (html . result . annotate)

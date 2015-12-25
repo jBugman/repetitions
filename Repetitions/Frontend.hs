@@ -21,7 +21,7 @@ result = renderHtml . result'
 
 index' :: Html
 index' = layout $
-  form ! A.action "/process" ! A.method "post" $ do
+  form ! A.action "/result" ! A.method "post" $ do
     div ! class_ "form-group" $ do
       label ! A.for "text" $ "Текст"
       textarea ! name "text" ! class_ "form-control" ! A.rows "10" ! id "text" $ ""
