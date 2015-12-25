@@ -6,7 +6,7 @@ import Data.Text.Lazy (Text, toStrict)
 import Data.List (intersperse)
 import Text.Blaze.Html (toHtml, preEscapedToHtml)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
-import Text.Blaze.Html5 (Html, (!), div, form, label, textarea, button, p, span)
+import Text.Blaze.Html5 (Html, (!), div, form, label, textarea, button, p, span, br)
 import Text.Blaze.Html5.Attributes (class_, href, id, name)
 import qualified Text.Blaze.Html5 as H hiding (map)
 import qualified Text.Blaze.Html5.Attributes as A
@@ -33,6 +33,7 @@ result' = layout .
   lines . toStrict . renderHtml .
   mconcat . intersperse " " . map colorize
     where
+      colorize OkLF = br
       colorize (Ok x) = toHtml x
       colorize (Bad x) = span ! class_ "bad" $ toHtml x
 
@@ -42,7 +43,7 @@ layout content = H.docTypeHtml $ do
     H.title "Repetitions"
     H.meta ! A.charset "utf-8"
     H.link ! href "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" ! A.rel "stylesheet" ! A.media "screen"
-    H.style ".bad {color: #d9534f;} .container {padding: 20px;}"
+    H.style ".bad {color: #d9534f;} .suspicious {color: rgb(246,184, 85);} .container {padding: 20px;}"
   H.body $
     div ! class_ "container" $
       div ! class_ "row" $

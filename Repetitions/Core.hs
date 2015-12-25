@@ -1,13 +1,18 @@
 module Repetitions.Core where
 
-import Prelude hiding (words, length)
+import Prelude hiding (words, length, lines)
 import Text.EditDistance
-import Data.Text (Text, unpack, split, toLower, length)
+import Data.List (intercalate, foldl')
+import Data.Text (Text, unpack, split, toLower, length, lines)
 import qualified Data.Text as T
 import qualified Data.Char as C
-import Data.List (foldl')
 
-data AnnotatedWord = Ok !Text | Bad !Text
+data AnnotatedWord = Ok !Text | Bad !Text | OkLF deriving Show
+data Token = Word !Text | LF deriving Show
+
+isWord :: Token -> Bool
+isWord (Word _) = True
+isWord LF       = False
 
 -- |Size of neighbours list on each side of target word
 constRadius :: Int
@@ -21,44 +26,69 @@ constThreshold = 3
 constSignificant :: Int
 constSignificant = 2
 
+-- |Means that two words are totally different
+infiniteDistance :: Int
+infiniteDistance = 9001
+
 annotate :: Text -> [AnnotatedWord]
-annotate = map markRepetition . weightedWords constRadius
+annotate = map markRepetition . weightedWords
 
-markRepetition :: (Text, Int) -> AnnotatedWord
-markRepetition (x, d)
-  | d < constThreshold = Bad x
-  | otherwise          = Ok x
+markRepetition :: (Token, Int) -> AnnotatedWord
+markRepetition (LF, _) = OkLF
+markRepetition (Word word, weight)
+  | similar   = Bad word
+  | otherwise = Ok word
+    where
+      similar = weight < constThreshold
 
-weightedWords :: Int -> Text -> [(Text, Int)]
-weightedWords radius text = map neighboursOf . indexedItems $ words
+weightedWords :: Text -> [(Token, Int)]
+weightedWords text = map neighboursOf . indexedItems $ words
   where
     neighboursOf (w, n)
-      | processable w = (w, minimum $ map (distance w) $ neighboursAt radius n words)
-      | otherwise     = (w, 32)
-    processable w = isSignificant $ pureWord w
+      | isSignificant w' = (w, minimum $ map distance'' $ neighboursAt constRadius n words)
+      | otherwise        = (w, infiniteDistance)
+        where
+          distance'' x = distance w' $ pureWord' x
+          w' = pureWord' w
     words = tokens text
 
-tokens :: Text -> [Text]
--- tokens = T.words
-tokens = split (\c -> C.generalCategory c == C.Space)
+tokens2 :: Text -> [Text]
+tokens2 = split (\c -> C.generalCategory c == C.Space)
 
-distance :: Text -> Text -> Int
-distance a b = levenshteinDistance defaultEditCosts (unpack a) (unpack b)
+tokens :: Text -> [Token]
+tokens t = intercalate [LF] . map (map Word . tokens') . lines $ t
+  where
+    tokens' = split (\c -> C.generalCategory c == C.Space)
+
+distance :: Token -> Token -> Int
+distance LF _ = infiniteDistance
+distance _ LF = infiniteDistance
+distance (Word a) (Word b) = distance' a b
+
+distance' :: Text -> Text -> Int
+distance' a b = levenshteinDistance defaultEditCosts (unpack a) (unpack b)
 
 indexedItems :: [a] -> [(a, Int)]
 indexedItems xs = zip xs [0..]
 
-neighboursAt :: Int -> Int -> [Text] -> [Text]
+neighboursAt :: Int -> Int -> [Token] -> [Token]
 neighboursAt radius n ws = lastN radius (significants lefts) ++ take radius (drop 1 $ significants rights)
   where
-    significants    = filter isSignificant . map pureWord
-    (lefts, rights) = splitAt n ws
+    significants       = filter isSignificant . map pureWord'
+    (lefts, rights)    = splitAt n ws
 
 lastN :: Int -> [a] -> [a]
 lastN n xs = foldl' (const . drop 1) xs (drop n xs)
 
-isSignificant :: Text -> Bool
-isSignificant w = length w > constSignificant
+isSignificant :: Token -> Bool
+isSignificant LF       = False
+isSignificant (Word w) = length w > constSignificant
+
+pureWord' :: Token -> Token
+pureWord' LF       = LF
+pureWord' (Word w) = Word $ pureWord w
 
 pureWord :: Text -> Text
-pureWord = toLower . T.filter (not . C.isPunctuation)
+pureWord = toLower . T.filter (not . isLetter)
+  where
+    isLetter c = C.isPunctuation c || C.isSeparator c
