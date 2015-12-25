@@ -13,3 +13,9 @@ fix-build:
 deploy:
 	mkdir -p ~/Dropbox/Apps/Heroku/repetitions/bin
 	cp dist/build/repetitions/repetitions ~/Dropbox/Apps/Heroku/repetitions/bin/repetitions
+
+test-deps:
+	cabal install --only-dependencies --enable-tests -j2
+
+test:
+	cabal test
