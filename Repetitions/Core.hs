@@ -7,7 +7,7 @@ import Data.Text (Text, unpack, split, toLower, length, lines)
 import qualified Data.Text as T
 import qualified Data.Char as C
 
-data AnnotatedWord = Ok !Text | Bad !Text | OkLF deriving Show
+data AnnotatedWord = Ok !Text | Bad !Text | OkLF deriving (Show, Eq)
 data Token = Word !Text | LF deriving Show
 
 isWord :: Token -> Bool
@@ -52,13 +52,13 @@ weightedWords text = map neighboursOf . indexedItems $ words
           w' = pureWord' w
     words = tokens text
 
-tokens2 :: Text -> [Text]
-tokens2 = split (\c -> C.generalCategory c == C.Space)
-
 tokens :: Text -> [Token]
-tokens t = intercalate [LF] . map (map Word . tokens') . lines $ t
+tokens = intercalate [LF] . map (map Word . tokens') . filter (not . T.null) . lines
   where
     tokens' = split (\c -> C.generalCategory c == C.Space)
+-- tokens = intercalate [LF] . map (map Word . tokens') . filter (not . T.null) . lines
+--   where
+--     tokens' = filter (not . T.null) . split (\c -> C.generalCategory c == C.Space)
 
 distance :: Token -> Token -> Int
 distance LF _ = infiniteDistance

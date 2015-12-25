@@ -1,12 +1,11 @@
 module Repetitions.Frontend (index, result) where
 
 import Prelude hiding (div, head, id, span, lines)
-import Data.Text (lines)
-import Data.Text.Lazy (Text, toStrict)
+import Data.Text.Lazy (Text)
 import Data.List (intersperse)
-import Text.Blaze.Html (toHtml, preEscapedToHtml)
+import Text.Blaze.Html (toHtml)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
-import Text.Blaze.Html5 (Html, (!), div, form, label, textarea, button, p, span, br)
+import Text.Blaze.Html5 (Html, (!), div, form, label, textarea, button, span, br)
 import Text.Blaze.Html5.Attributes (class_, href, id, name)
 import qualified Text.Blaze.Html5 as H hiding (map)
 import qualified Text.Blaze.Html5.Attributes as A
@@ -29,13 +28,14 @@ index' = layout $
 
 result' :: [AnnotatedWord] -> Html
 result' = layout .
-  mapM_ (p . preEscapedToHtml) .
-  lines . toStrict . renderHtml .
   mconcat . intersperse " " . map colorize
     where
       colorize OkLF = br
       colorize (Ok x) = toHtml x
       colorize (Bad x) = span ! class_ "bad" $ toHtml x
+
+-- collapseLineFeeds :: [AnnotatedWord] -> [AnnotatedWord]
+-- collapseLineFeeds = map head . groupBy (\a b -> a == b && b == OkLF)
 
 layout :: Html -> Html
 layout content = H.docTypeHtml $ do
