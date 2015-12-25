@@ -1,42 +1,47 @@
-{-# LANGUAGE OverloadedStrings #-}
-module Repetitions.Frontend where
+module Repetitions.Frontend (index, result) where
 
 import Prelude hiding (div, head, id, span, lines)
 import Data.Text (lines)
-import Data.Text.Lazy (toStrict)
+import Data.Text.Lazy (Text, toStrict)
 import Data.List (intersperse)
 import Text.Blaze.Html (toHtml, preEscapedToHtml)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
-import Text.Blaze.Html5 (Html, (!), docTypeHtml, head, meta, link, title,
-                         body, div, form, label, textarea, button, p, span)
-import Text.Blaze.Html5.Attributes (charset, class_, href, rel, media, for, rows, id,
-                                    style, type_, action, method, name)
+import Text.Blaze.Html5 (Html, (!), div, form, label, textarea, button, p, span)
+import Text.Blaze.Html5.Attributes (class_, href, id, name)
+import qualified Text.Blaze.Html5 as H hiding (map)
+import qualified Text.Blaze.Html5.Attributes as A
 
 import Repetitions.Core (AnnotatedWord(..))
 
-index :: Html
-index = layout "Repetitions" $
-  form ! action "/process" ! method "post" $ do
-    div ! class_ "form-group" $ do
-      label ! for "text" $ "Текст"
-      textarea ! name "text" ! class_ "form-control" ! rows "10" ! id "text" $ ""
-    button ! type_ "submit" ! class_ "btn btn-default" $ "Проверить"
+index :: Text
+index = renderHtml index'
 
-result :: [AnnotatedWord] -> Html
-result = layout "Repetitions" .
+result :: [AnnotatedWord] -> Text
+result = renderHtml . result'
+
+index' :: Html
+index' = layout $
+  form ! A.action "/process" ! A.method "post" $ do
+    div ! class_ "form-group" $ do
+      label ! A.for "text" $ "Текст"
+      textarea ! name "text" ! class_ "form-control" ! A.rows "10" ! id "text" $ ""
+    button ! A.type_ "submit" ! class_ "btn btn-default" $ "Проверить"
+
+result' :: [AnnotatedWord] -> Html
+result' = layout .
   mapM_ (p . preEscapedToHtml) .
   lines . toStrict . renderHtml .
   mconcat . intersperse " " . map colorize
     where
       colorize (Ok x) = toHtml x
-      colorize (Bad x) = span ! style "color: #d9534f;" $ toHtml x
+      colorize (Bad x) = span ! A.style "color: #d9534f;" $ toHtml x
 
-layout :: Html -> Html -> Html
-layout t c = docTypeHtml $ do
-  head $ do
-    title t
-    meta ! charset "utf-8"
-    link ! href "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" ! rel "stylesheet" ! media "screen"
-  body $
+layout :: Html -> Html
+layout c = H.docTypeHtml $ do
+  H.head $ do
+    H.title "Repetitions"
+    H.meta ! A.charset "utf-8"
+    H.link ! href "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" ! A.rel "stylesheet" ! A.media "screen"
+  H.body $
     div ! class_ "container" $
-      div ! class_ "row" ! style "padding: 20px;" $ c
+      div ! class_ "row" ! A.style "padding: 20px;" $ c
