@@ -78,7 +78,8 @@ neighboursAt radius n ws = lastN radius (significants lefts) ++ take radius (dro
     (lefts, rights)    = splitAt n ws
 
 lastN :: Int -> [a] -> [a]
-lastN n xs = foldl' (const . drop 1) xs (drop n xs)
+lastN n xs | n > 0     = foldl' (const . drop 1) xs (drop n xs)
+lastN _ _  | otherwise = []
 
 isSignificant :: Token -> Bool
 isSignificant LF       = False
